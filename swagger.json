@@ -1,0 +1,420 @@
+{
+	"openapi": "3.0.1",
+	"info": {
+		"version": "2.0.2",
+		"title": "ActiveLifeTracker API Documentation",
+		"description": "The API for the ActiveLifeTracker project"
+	},
+	"consumes": ["application/json"],
+	"produces": ["application/json"],
+	"servers": [
+		{
+			"url": "http://localhost:4000/api"
+		}
+	],
+	"tags": [
+		{
+			"name": "Auth",
+			"description": "Endpoints authorization"
+		},
+		{
+			"name": "Nutrition",
+			"description": "Endpoints related to nutrition"
+		},
+		{
+			"name": "Exercises",
+			"description": "Endpoints related to exercises performed by the user"
+		},
+		{
+			"name": "Diary",
+			"description": "Endpoints related to diary performed by the user"
+		}
+	],
+	"paths": {
+		"/auth": {
+			"get": {
+				"tags": ["Auth"],
+				"summary": "Social login",
+				"responses": {
+					"200": {
+						"description": "Login successful",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/register": {
+			"post": {
+				"tags": ["Auth"],
+				"summary": "Register a new user",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserRegistration"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "User registered successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request"
+					},
+					"409": {
+						"description": "Email in use"
+					}
+				}
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"tags": ["Auth"],
+				"summary": "Login a user",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserLogin"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Login successful",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/logout": {
+			"post": {
+				"tags": ["Auth"],
+				"summary": "Logout a user",
+				"security": [
+					{
+						"Bearer": []
+					}
+				],
+				"responses": {
+					"204": {
+						"description": "Logout successful"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/current": {
+			"get": {
+				"tags": ["Auth"],
+				"summary": "Get current user",
+				"security": [
+					{
+						"Bearer": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Current user retrieved",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/User"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/exercises/record": {
+			"post": {
+				"tags": ["Exercises"],
+				"summary": "Save performed exercise and associate it with a date",
+				"security": [
+					{
+						"Bearer": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"exercise": {
+										"type": "string",
+										"description": "Exercise ID",
+										"example": "exercise_12345"
+									},
+									"date": {
+										"type": "string",
+										"description": "Date in format dd/mm/YYYY",
+										"example": "21/06/2024"
+									},
+									"time": {
+										"type": "number",
+										"description": "Time in minutes",
+										"example": 30
+									},
+									"calories": {
+										"type": "number",
+										"description": "Calories burned",
+										"example": 200
+									}
+								},
+								"required": ["exercise", "date", "time", "calories"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Exercise recorded successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"message": {
+											"type": "string",
+											"example": "Exercise recorded successfully"
+										}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string",
+											"example": "Invalid input data"
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/diary/consumed": {
+			"post": {
+				"tags": ["Diary"],
+				"summary": "Save consumed product and associate it with a date",
+				"security": [
+					{
+						"Bearer": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"product": {
+										"type": "string",
+										"description": "Product ID",
+										"example": "product_12345"
+									},
+									"date": {
+										"type": "string",
+										"description": "Date in format dd/mm/YYYY",
+										"example": "21/06/2024"
+									},
+									"amount": {
+										"type": "number",
+										"description": "Amount in grams",
+										"example": 100
+									},
+									"calories": {
+										"type": "number",
+										"description": "Calories consumed",
+										"example": 200
+									}
+								},
+								"required": ["product", "date", "amount", "calories"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Product consumption saved successfully",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"message": {
+											"type": "string",
+											"example": "Product consumption saved successfully"
+										}
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Invalid input data",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"error": {
+											"type": "string",
+											"example": "Invalid input data"
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"AuthResponse": {
+				"type": "object",
+				"properties": {
+					"token": {
+						"type": "string",
+						"description": "Authentication token"
+					},
+					"redirect": {
+						"type": "string",
+						"description": "Redirect URL"
+					}
+				},
+				"example": {
+					"token": "your_jwt_token",
+					"redirect": "https://your-frontend-url.com/social_auth?token=your_jwt_token"
+				}
+			},
+			"UserRegistration": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "User's name",
+						"example": "John Doe"
+					},
+					"email": {
+						"type": "string",
+						"description": "User's email",
+						"example": "john.doe@example.com",
+						"pattern": "^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$"
+					},
+					"password": {
+						"type": "string",
+						"description": "User's password",
+						"example": "user_password"
+					}
+				}
+			},
+			"UserLogin": {
+				"type": "object",
+				"properties": {
+					"email": {
+						"type": "string",
+						"description": "User's email",
+						"example": "john.doe@example.com",
+						"pattern": "^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$"
+					},
+					"password": {
+						"type": "string",
+						"description": "User's password",
+						"example": "user_password"
+					}
+				}
+			},
+			"User": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "User ID",
+						"example": "60d21baee76c2a456789d23b"
+					},
+					"name": {
+						"type": "string",
+						"description": "User's name",
+						"example": "John Doe"
+					},
+					"email": {
+						"type": "string",
+						"description": "User's email",
+						"example": "john.doe@example.com",
+						"pattern": "^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$"
+					}
+				}
+			}
+		},
+		"securitySchemes": {
+			"Bearer": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"description": "Enter JWT token obtained after logging in"
+			}
+		}
+	}
+}
