@@ -1,13 +1,10 @@
 /** @format */
 
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { User, Token } from '../../models/index.js';
-import { httpError } from '../../utils/index.js';
-import { checkUserToken } from '../../utils/deleteInValidToken.js';
+import { httpError, createToken, checkUserToken } from '../../utils/index.js';
 
 export const login = async ({ body }, res) => {
-	const { SECRET_KEY } = process.env;
 	const { email, password } = body;
 
 	const user = await User.findOne({ email });
@@ -22,13 +19,9 @@ export const login = async ({ body }, res) => {
 		throw httpError(401, 'Email or password is wrong');
 	}
 
-	const payload = {
-		id: user._id,
-	};
-
 	checkUserToken(user._id);
 
-	const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '12h' });
+	const token = createToken(user);
 
 	const newToken = new Token({
 		userId: user._id,
@@ -36,12 +29,11 @@ export const login = async ({ body }, res) => {
 	});
 	await newToken.save();
 
-	res.json({
-		token,
-		user: {
-			id: user._id,
-			name: user.name,
-			email: user.email,
-		},
+	res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+
+	res.status(201).json({
+		message: 'Login user successful',
+		name: user.name,
+		email: user.email,
 	});
 };

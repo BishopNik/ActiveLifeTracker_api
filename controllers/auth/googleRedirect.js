@@ -3,12 +3,10 @@
 import axios from 'axios';
 import queryString from 'query-string';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { User, Token } from '../../models/index.js';
-import { checkUserToken } from '../../utils/deleteInValidToken.js';
+import { createToken, checkUserToken } from '../../utils/index.js';
 
 export const googleRedirect = async (req, res) => {
-	const { SECRET_KEY } = process.env;
 	const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
 
 	const urlObj = new URL(fullUrl);
@@ -47,14 +45,19 @@ export const googleRedirect = async (req, res) => {
 
 		checkUserToken(googleUser._id);
 
-		const token = jwt.sign({ id: googleUser._id }, SECRET_KEY, { expiresIn: '12h' });
+		const token = createToken(googleUser);
 
 		await Token.create({
 			userId: googleUser._id,
 			token,
 		});
 
-		res.redirect(`${process.env.FRONTEND_URL}/google_auth?token=${token}`);
+		res.cookie('token', token, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+		});
+
+		res.redirect(`${process.env.FRONTEND_URL}/google_auth`);
 	} catch (error) {
 		return res.status(500).send(error.message);
 	}

@@ -4,6 +4,7 @@ import express from 'express';
 import logger from 'morgan';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 
 import authRouter from './routes/api/auth.js';
 
@@ -19,6 +20,8 @@ const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short';
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Api-docs
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

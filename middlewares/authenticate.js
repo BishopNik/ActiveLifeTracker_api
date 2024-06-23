@@ -1,11 +1,9 @@
 /** @format */
 
-import jwt from 'jsonwebtoken';
-import { httpError } from '../utils/index.js';
+import { httpError, verifyToken } from '../utils/index.js';
 import { User, Token } from '../models/index.js';
 
 export const authenticate = async (req, res, next) => {
-	const { SECRET_KEY } = process.env;
 	const { authorization } = req.headers;
 	if (!authorization) {
 		return next(httpError(401, 'Not authorized'));
@@ -15,7 +13,7 @@ export const authenticate = async (req, res, next) => {
 		return next(httpError(401, 'Not authorized'));
 	}
 	try {
-		const { id } = jwt.verify(token, SECRET_KEY);
+		const { id } = verifyToken(token);
 		const user = await User.findById(id);
 		const tokenData = await Token.findOne({ userId: id, token });
 
